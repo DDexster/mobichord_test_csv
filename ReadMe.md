@@ -63,7 +63,7 @@ npm install
 ```
 node app.js
 ```
-5. If parsing successiful you wil see this kind og message in your command line:
+5. If parsing successifull you wil see this kind of message in your command line:
 
 ```
 {path}/{filename}.json written Successifully!

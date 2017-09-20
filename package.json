@@ -8,6 +8,8 @@
         "csvtojson": "^1.1.7",
         "fs": "^0.0.1-security",
         "fs-finder": "^1.8.1",
+        "jszip": "^3.1.4",
+        "lodash": "^4.17.4",
         "moment": "^2.18.1"
     }
 }

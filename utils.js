@@ -1,9 +1,14 @@
-const fs = require( 'fs' );
-const moment = require( 'moment' );
+const fs = require( 'fs' ),
+    csv = require( 'csvtojson' ),
+    moment = require( 'moment' );
+
+const csvOptions = {
+    delimiter: "||"
+}
 
 
 const Utils = {
-    normalizePerson: rawPerson => {
+    normalizePerson: function ( rawPerson ) {
         return {
             name: `${rawPerson.last_name} ${rawPerson.first_name}`,
             phone: rawPerson.phone.replace( /[^0-9]/g, '' ),
@@ -17,16 +22,29 @@ const Utils = {
         }
     },
 
-    writeFile: ( filePath, array ) => {
-        const filename = filePath.substring( filePath.lastIndexOf( '/' ) + 1, filePath.length - 4 );
-        fs.writeFile( `${__dirname}/output/${filename}.json`, JSON.stringify( array ), error => {
+    writeFile: function ( fileName, array ) {
+        const coupFileName = fileName.substring( 0, fileName.length - 4 );
+        fs.writeFile( `${__dirname}/output/${coupFileName}.json`, JSON.stringify( array ), error => {
             if ( error ) {
                 throw error;
                 console.log( "Error:", error );
             } else {
-                console.log( `${__dirname}/output/${filename}.json written Successifully!` );
+                console.log( `${__dirname}/output/${coupFileName}.json written Successifully!` );
             }
         } );
+    },
+
+    parseCsvAndMakeJson: function ( stringBuffer, fileName ) {
+        const parsedItems = [];
+        csv( csvOptions )
+            .fromString( stringBuffer )
+            .on( 'json', rawPerson => {
+                parsedItems.push( this.normalizePerson( rawPerson ) );
+            } )
+            .on( 'done', () => {
+                this.writeFile( fileName, parsedItems );
+            } )
+
     }
 }
 

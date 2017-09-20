@@ -1,32 +1,40 @@
-const Finder = require( 'fs-finder' );
-const csv = require( 'csvtojson' );
-const Utils = require( './utils.js' );
+const fs = require( 'fs' ),
+    _ = require( 'lodash' ),
+    Utils = require( './utils.js' ),
+    JSZip = require( 'jszip' ),
+    Finder = require( 'fs-finder' );
 
-const csvOptions = {
-    delimiter: "||"
-}
 
-//Search ".csv" files in "/input" directory and make an array of found files
+//Search "zip" files in "/input" directory and make an array of found files
 const inputFiles = Finder
     .from( __dirname + "/input" )
-    .findFiles( '*.csv' );
+    .findFiles( '*.zip' );
 
 //Exit program if there is no ".csv" files
 if ( !inputFiles || inputFiles.length === 0 ) {
-    console.log( "Error: No '.csv' files found in '/input' drectory" );
+    console.log( "Error: No '.zip' files found in '/input' drectory" );
     return;
 }
 
-//Iter all found files and convert them to ".json"
+//Iter all found files and check if they have ".csv" files
 inputFiles.forEach( file => {
-    const parsedItems = [];
-    csv( csvOptions )
-        .fromFile( file )
-        .on( 'json', rawPerson => {
-            parsedItems.push( Utils.normalizePerson( rawPerson ) );
-        } )
-        .on( 'done', () => {
-            Utils.writeFile( file, parsedItems );
-        } )
+    fs.readFile( file, function ( err, data ) {
+        if ( err ) {
+            throw err;
+            console.log( "Error:", err );
+        }
 
+        JSZip.loadAsync( data ).then( zip => {
+            // Iterate file entries in zip archive
+            _.forIn( zip.files, ( file, fileName ) => {
+                //Check if it's a ".csv"
+                if ( fileName.substring( fileName.length - 4 ) === ".csv" ) {
+                    //if it does unzip it and make a normalized "JSON" file
+                    zip.files[ fileName ].async( 'string' ).then( content => {
+                        Utils.parseCsvAndMakeJson( content, fileName );
+                    } );
+                }
+            } );
+        } );
+    } );
 } );
