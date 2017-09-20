@@ -10,7 +10,7 @@ const inputFiles = Finder
     .from( __dirname + "/input" )
     .findFiles( '*.zip' );
 
-//Exit program if there is no ".csv" files
+//Exit program if there is no ".zip" files
 if ( !inputFiles || inputFiles.length === 0 ) {
     console.log( "Error: No '.zip' files found in '/input' drectory" );
     return;
